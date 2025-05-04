@@ -1,7 +1,7 @@
 import React from 'react';
 
 const categories = [
-  { name: 'Electronics', image: 'https://source.unsplash.com/400x300/?electronics' },
+  { name: 'Electronics', image: 'https://via.placeholder.com/400x300?text=Electronics' },
   { name: 'Computers', image: 'https://source.unsplash.com/400x300/?computer' },
   { name: 'Clothes', image: 'https://source.unsplash.com/400x300/?clothes' },
   { name: 'Beauty', image: 'https://source.unsplash.com/400x300/?makeup' },
