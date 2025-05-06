@@ -10,7 +10,7 @@ const categories = [
 ];
 
 const Sidebar = () => (
-  <aside className="hidden md:block w-20 bg-white shadow-lg rounded-xl p-6 mr-6 h-fit mt-2">
+  <aside className="hidden md:block w-20 bg-white shadow-lg rounded-xl p-6 h-fit mt-2">
     <h2 className="text-lg font-bold mb-4 text-gray-800">Categories</h2>
     <ul className="space-y-2">
       {categories.map((cat) => (
