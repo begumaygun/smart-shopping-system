@@ -1,15 +1,16 @@
 import React from 'react';
-import HeroSection from '../components/HeroSection';
-import CategoryGrid from '../components/CategoryGrid';
+import Sidebar from '../components/Sidebar';
+import PromoBanner from '../components/PromoBanner';
+import Topbar from '../components/Topbar';
 
-const HomePage = () => {
-  return (
-    <div className="space-y-8">
-      <HeroSection />
-      <h2 className="text-2xl font-bold text-gray-800">Popular Categories</h2>
-      <CategoryGrid />
-    </div>
-  );
-};
 
-export default HomePage;
+const HomePage = () => (
+  <div className=" bg-[#a32a2a] flex-1" style={{ height: "100vh" }}>
+  <Topbar/>
+
+   <Sidebar />
+    <PromoBanner />
+  </div>
+);
+
+export default HomePage; 
