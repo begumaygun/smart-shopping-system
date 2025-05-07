@@ -5,11 +5,19 @@ import Topbar from '../components/Topbar';
 
 
 const HomePage = () => (
-  <div className=" bg-[#a32a2a] flex-1" style={{ height: "100vh" }}>
+  <div className=" bg-[#e9944e] " style={{ height: "100vh" }}>
   <Topbar/>
+  <div className="flex h-full">
+      {/* Sidebar solda */}
+      <Sidebar />
 
-   <Sidebar />
-    <PromoBanner />
+      {/* Sağ içerik */}
+      <div className="flex-1 p-6 overflow-auto">
+        <PromoBanner />
+        {/* Diğer içerikler */}
+      </div>
+    </div>
+
   </div>
 );
 
