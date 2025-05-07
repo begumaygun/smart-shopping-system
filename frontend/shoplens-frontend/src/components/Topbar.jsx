@@ -5,8 +5,8 @@ export default function Topbar() {
     <div className='flex-1' >
       <header className="w-full bg-white shadow-md rounded-b-xl px-6 py-4 grid grid-cols-3 items-center sticky top-0 z-10">
   {/* Sol: Logo */}
-  <div className="flex items-center gap-2 text-2xl font-bold text-orange-500 bg-[#f0f0f0]">
-   <span className="ml-2 text-red-100 font-bold text-lg">ShopLens</span>
+  <div className="flex items-center gap-2 text-2xl font-bold text-orange-500 cursor-pointer bg-[#fff]">
+   <span className="ml-2 text-[#e9944e] font-bold text-lg">ShopLens</span>
   </div>
 
   {/* Orta: Search */}
