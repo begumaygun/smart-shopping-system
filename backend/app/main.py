@@ -1,8 +1,10 @@
 # app/main.py
 from fastapi import FastAPI
 from pydantic import BaseModel
-from app.ai_model import predict_persona
+from ai_model import predict_persona
 from fastapi.middleware.cors import CORSMiddleware
+import pandas as pd
+from collections import Counter
 
 app = FastAPI()
 
@@ -30,11 +32,13 @@ def predict(data: CustomerData):
     
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Production'da sadece frontend domaini yazılır
+    allow_origins=["*"],  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+df = pd.read_csv("../app/data/shoplens_temiz_veri_cleaned.csv", sep=";")
+
 
 # Dummy müşteri verisi
 sample_customers = {
@@ -60,3 +64,8 @@ def get_customer(customer_id: str):
     if customer:
         return customer
     return {"error": "Customer not found"}
+
+@app.get("/top-categories")
+def get_top_categories():
+    top_counts = df["product_category"].value_counts().head(5)
+    return top_counts.to_dict()
