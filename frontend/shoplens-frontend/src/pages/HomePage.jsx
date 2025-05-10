@@ -6,6 +6,7 @@ import TopCategoriesChart from "../components/TopCategoriesChart";
 
 
 const HomePage = () => (
+  
   <div className=" bg-[#e9944e] " style={{ height: "100vh" }}>
   <Topbar/>
   <div className="flex h-full">
