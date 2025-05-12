@@ -22,7 +22,7 @@ const PromoBanner = () => (
         </div>
       </div>
 
-      {/* Sağdaki küçük kutular */}
+      {/* Sağdaki kutular */}
       <div className="flex flex-col gap-4 w-full lg:w-1/3">
         <div className="bg-white rounded-2xl shadow-md p-6 flex items-center justify-center cursor-pointer h-full text-center">
           <p className="text-lg font-semibold text-gray-800">🦋 See your dashboard</p>

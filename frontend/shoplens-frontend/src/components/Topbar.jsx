@@ -1,6 +1,9 @@
 import React from 'react'
+import { useNavigate } from 'react-router-dom';
+
 
 export default function Topbar() {
+  const navigate = useNavigate();
   return (
     <div className='flex-1' >
       <header className="w-full bg-white shadow-md rounded-b-xl px-6 py-4 grid grid-cols-3 items-center sticky top-0 z-10">
@@ -22,7 +25,10 @@ export default function Topbar() {
   <div className="flex justify-end items-center gap-6 text-2xl">
     <button title="Favorites" className="hover:text-orange-500 transition-colors">❤️</button>
     <button title="Cart" className="hover:text-orange-500 transition-colors">🛒</button>
-    <button title="User" className="hover:text-orange-500 transition-colors">
+    <button title="User"
+        onClick={() => navigate('/login')}
+        className="hover:text-orange-500 transition-colors"
+      >
       <span className=" w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">👤</span>
     </button>
   </div>
