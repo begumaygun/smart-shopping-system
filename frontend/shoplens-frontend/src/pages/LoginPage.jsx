@@ -14,10 +14,16 @@ const LoginPage = () => {
         email,
         password
       });
+
       alert(response.data.message); // Giriş başarılı
-      navigate('/homepage');
+      localStorage.setItem("userEmail", email); // E-postayı sakla
+      await axios.post('http://localhost:8000/login-log', { email }); // Giriş logu
+      navigate('/homepage'); // Ana sayfaya yönlendir
+
     } catch (error) {
-      alert("Giriş başarısız: " + (error.response?.data?.detail || "Sunucu hatası"));
+      const detail = error.response?.data?.detail;
+      const message = typeof detail === 'string' ? detail : JSON.stringify(detail);
+      alert("Giriş başarısız: " + message); // Hatalı mesaj artık düzgün çıkar
     }
   };
 
