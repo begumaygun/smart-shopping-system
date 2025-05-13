@@ -15,10 +15,23 @@ const LoginPage = () => {
         password
       });
 
-      alert(response.data.message); // Giriş başarılı
-      localStorage.setItem("userEmail", email); // E-postayı sakla
-      await axios.post('http://localhost:8000/login-log', { email }); // Giriş logu
-      navigate('/homepage'); // Ana sayfaya yönlendir
+      const { message, role } = response.data;
+
+      alert(message); // Giriş başarılı
+      localStorage.setItem("userEmail", email);
+      localStorage.setItem("userRole", role);
+      await axios.post('http://localhost:8000/login-log', { email });
+
+      // 🔁 Rol kontrolü ile yönlendirme
+      if (role === "customer") {
+        navigate("/homepage");
+      } else if (role === "seller") {
+        navigate("/seller-dashboard");
+      } else if (role === "admin") {
+        navigate("/admin-dashboard");
+      } else {
+        alert("Bilinmeyen kullanıcı rolü!");
+      }
 
     } catch (error) {
       const detail = error.response?.data?.detail;
