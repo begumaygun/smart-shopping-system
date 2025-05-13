@@ -1,31 +1,44 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 import Sidebar from '../components/Sidebar';
 import PromoBanner from '../components/PromoBanner';
 import Topbar from '../components/Topbar';
 import TopCategoriesChart from "../components/TopCategoriesChart";
 
+const HomePage = () => {
+  const [email, setEmail] = useState("");
+  const navigate = useNavigate();
 
-const HomePage = () => (
-  
-  <div className=" bg-[#e9944e] " style={{ height: "100vh" }}>
-  <Topbar/>
-  <div className="flex h-full">
-      {/* Sidebar solda */}
-      <Sidebar />
+  useEffect(() => {
+    const savedEmail = localStorage.getItem("userEmail");
+    if (!savedEmail) {
+      navigate("/login");
+    } else {
+      setEmail(savedEmail);
+    }
+  }, []);
 
-      {/* Sağ içerik */}
-      <div className="flex-1 p-6 overflow-auto">
-        <PromoBanner />
-        <TopCategoriesChart />
-        {/* Diğer içerikler */}
+  return (
+    <div className="bg-[#e9944e]" style={{ height: "100vh" }}>
+      <Topbar />
+      <div className="flex h-full">
+        {/* Sidebar solda */}
+        <Sidebar />
+
+        {/* Sağ içerik */}
+        <div className="flex-1 p-6 overflow-auto">
+          <PromoBanner />
+          <TopCategoriesChart />
+          
+          {/* Kullanıcıya özel mesaj */}
+          <p className="text-sm mt-6 text-gray-100">
+            Giriş yapan kullanıcı: <strong>{email}</strong>
+          </p>
+        </div>
       </div>
-      
-      
     </div>
-    
-    
+  );
+};
 
-  </div>
-);
-
-export default HomePage; 
+export default HomePage;
