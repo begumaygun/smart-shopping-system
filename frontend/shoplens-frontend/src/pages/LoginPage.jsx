@@ -23,47 +23,40 @@ const LoginPage = () => {
     } catch (error) {
       const detail = error.response?.data?.detail;
       const message = typeof detail === 'string' ? detail : JSON.stringify(detail);
-      alert("Giriş başarısız: " + message); // Hatalı mesaj artık düzgün çıkar
+      alert("Giriş başarısız: " + message);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-orange-50 px-4">
-      <div className="bg-white shadow-xl rounded-3xl p-10 w-full max-w-md space-y-6">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-orange-500">Hoş Geldin!</h1>
-        </div>
+    <div
+      className="min-h-screen bg-cover bg-center flex items-center justify-end pr-20"
+      style={{ backgroundImage: "url('/rocket-bg.png')" }}
+    >
+      <div className="bg-white shadow-xl rounded-2xl p-8 w-full max-w-xl h-[600px]">
+        <h2 className="text-3xl font-bold text-purple-700 text-center">Sign In</h2>
+        <p className="text-sm text-center text-gray-500 mb-6">Welcome to ShopLens</p>
 
-        <form className="space-y-4" onSubmit={handleLogin}>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">E-posta</label>
-            <input
-              type="email"
-              placeholder="ornek@eposta.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Şifre</label>
-            <input
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
-              required
-            />
-          </div>
+        <form onSubmit={handleLogin} className="flex flex-col justify-between h-[400px]">
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full px-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400"
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400"
+          />
 
           <button
             type="submit"
-            className="w-full bg-orange-400 text-white py-2 rounded-xl font-semibold hover:bg-orange-500 transition"
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-xl transition"
           >
-            Giriş Yap
+            LOGIN
           </button>
         </form>
       </div>
