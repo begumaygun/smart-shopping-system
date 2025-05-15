@@ -45,7 +45,7 @@ const LoginPage = () => {
       className="min-h-screen bg-cover bg-center flex items-center justify-end pr-20"
       style={{ backgroundImage: "url('/rocket-bg.png')" }}
     >
-      <div className="bg-white shadow-xl rounded-2xl p-8 w-full max-w-xl h-[600px]">
+      <div className="bg-white shadow-xl rounded-2xl p-8 w-full  max-w-xl h-[600px] transform -translate-x-24">
         <h2 className="text-3xl font-bold text-purple-700 text-center">Sign In</h2>
         <p className="text-sm text-center text-gray-500 mb-6">Welcome to ShopLens</p>
 
