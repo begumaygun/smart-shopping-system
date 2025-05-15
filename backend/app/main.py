@@ -21,7 +21,7 @@ app.add_middleware(
 df = pd.read_csv("../app/data/shoplens_temiz_veri_cleaned.csv", sep=";")
 
 # Kullanıcı e-posta + şifreleri (giriş kontrolü için)
-users_df = pd.read_csv("../app/data/All_Data_MailPassword.csv", sep=";")
+users_df = pd.read_csv("../app/data/All_Data_MailPassword_withRoles.csv", sep=";")
 user_dict = dict(zip(users_df["email"], users_df["password"]))
 
 # MODELLER
@@ -89,11 +89,14 @@ def get_top_categories():
 def login(request: LoginRequest):
     if request.email in user_dict:
         if request.password == user_dict[request.email]:
-            return {"message": "Giriş başarılı"}
+            user_row = users_df[users_df["email"] == request.email]
+            role = user_row["role"].values[0] if not user_row.empty else "customer"
+            return {"message": "Giriş başarılı", "role": role}
         else:
             raise HTTPException(status_code=401, detail="Hatalı şifre")
     else:
         raise HTTPException(status_code=404, detail="E-posta bulunamadı")
+
 
 # GİRİŞ LOG SİSTEMİ
 last_login = {}
@@ -108,3 +111,32 @@ def log_login(data: LoginEmail):
 @app.get("/last-logins")
 def get_last_logins():
     return last_login
+
+@app.get("/seller-orders/{email}")
+def get_seller_orders(email: str):
+    seller_row = users_df[users_df["email"] == email]
+    if seller_row.empty:
+        raise HTTPException(status_code=404, detail="Satıcı bulunamadı")
+
+    seller_id = seller_row["seller_id"].values[0]
+
+    # Hata ayıklamak için terminale yazdır
+    print(f"[DEBUG] Email: {email} | Seller ID: {seller_id}")
+
+    seller_orders = df[df["seller_id"] == seller_id]
+
+    print(f"[DEBUG] Sipariş sayısı: {seller_orders.shape[0]}")
+
+    if seller_orders.empty:
+        return []
+
+    expected_cols = ["customer_city", "product_category"] 
+
+    for col in expected_cols:
+        if col not in df.columns:
+            raise HTTPException(status_code=500, detail=f"{col} sütunu sipariş datasında yok!")
+
+    return seller_orders[expected_cols].to_dict(orient="records")
+
+
+
