@@ -17,7 +17,7 @@ const LoginPage = () => {
 
       const { message, role } = response.data;
 
-      alert(message); // Giriş başarılı
+      //alert(message); // Giriş başarılı
       localStorage.setItem("userEmail", email);
       localStorage.setItem("userRole", role);
       await axios.post('http://localhost:8000/login-log', { email });
@@ -45,29 +45,30 @@ const LoginPage = () => {
       className="min-h-screen bg-cover bg-center flex items-center justify-end pr-20"
       style={{ backgroundImage: "url('/rocket-bg.png')" }}
     >
-      <div className="bg-white shadow-xl rounded-2xl p-8 w-full max-w-xl h-[600px]">
-        <h2 className="text-3xl font-bold text-purple-700 text-center">Sign In</h2>
-        <p className="text-sm text-center text-gray-500 mb-6">Welcome to ShopLens</p>
+      <div className="bg-white shadow-xl rounded-2xl p-8 w-full max-w-xl h-[500px] bg-cover bg-center flex-col justify-center items-center md:px-10 m-20 ">
+        <h2 className="text-6xl font-bold text-purple-700 text-center">Sign In</h2>
+        <p className="text-2xl text-center text-gray-500 mb-6 mt-2">Welcome to ShopLens</p>
 
-        <form onSubmit={handleLogin} className="flex flex-col justify-between h-[400px]">
+        <form onSubmit={handleLogin} className="flex flex-col justify-around  h-[400px]">
+         <div className="flex flex-col gap-12">
           <input
             type="email"
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400"
+            className="text-lg w-full px-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400"
           />
           <input
             type="password"
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400"
+            className=" text-lg w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400"
           />
-
+          </div>
           <button
             type="submit"
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-xl transition"
+            className="text-2xl w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-xl transition mb-10 "
           >
             LOGIN
           </button>

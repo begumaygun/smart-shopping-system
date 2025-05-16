@@ -11,7 +11,7 @@ app = FastAPI()
 # CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  
+    allow_origins=["http://localhost:5173"],  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -20,9 +20,11 @@ app.add_middleware(
 # Ana veri seti
 df = pd.read_csv("../app/data/shoplens_temiz_veri_cleaned.csv", sep=";")
 
+
 # Kullanıcı e-posta + şifreleri (giriş kontrolü için)
 users_df = pd.read_csv("../app/data/All_Data_MailPassword_withRoles.csv", sep=";")
 user_dict = dict(zip(users_df["email"], users_df["password"]))
+
 
 # MODELLER
 class LoginRequest(BaseModel):
@@ -44,6 +46,14 @@ class CustomerData(BaseModel):
     repeat_purchase_ratio: float
 
 # ENDPOINTLER
+@app.get("/all-users")
+def get_all_users():
+    try:
+        return users_df[["email", "seller_id", "role"]].head(20).to_dict(orient="records")
+    except Exception as e:
+        print("[HATA - /all-users]:", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/")
 def read_root():
@@ -137,6 +147,50 @@ def get_seller_orders(email: str):
             raise HTTPException(status_code=500, detail=f"{col} sütunu sipariş datasında yok!")
 
     return seller_orders[expected_cols].to_dict(orient="records")
+
+@app.get("/seller-delivery-stats/{seller_id}")
+def get_avg_delivery(seller_id: str):
+    seller_df = df[df["seller_id"] == seller_id]
+    if seller_df.empty:
+        raise HTTPException(status_code=404, detail="Satıcı bulunamadı.")
+    avg_days = round(seller_df["delivery_days"].mean(), 1)
+    return {"seller_id": seller_id, "avg_delivery_days": avg_days}
+
+@app.get("/seller-efficiency/{email}")
+def get_seller_efficiency(email: str):
+    # E-postaya göre seller bilgisi al
+    seller_row = users_df[users_df["email"] == email]
+    if seller_row.empty:
+        raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı")
+
+    # Role kontrolü
+    role = seller_row["role"].values[0]
+    if role != "seller":
+        raise HTTPException(status_code=403, detail="Bu kullanıcı bir satıcı değil")
+
+    # Seller ID çek ve veriyi filtrele
+    seller_id = seller_row["seller_id"].values[0]
+    seller_df = df[df["seller_id"] == seller_id]
+
+    if seller_df.empty:
+        return {"email": email, "efficiency": 0}
+
+    # Teslimat süresi toplamı ve ürün sayısı
+    total_delivery_time = seller_df["delivery_days"].sum()
+    total_products_sold = seller_df.shape[0]
+
+    if total_products_sold == 0:
+        return {"email": email, "efficiency": 0}
+
+    efficiency = round(total_delivery_time / total_products_sold, 2)
+
+    return {
+        "email": email,
+        "seller_id": seller_id,
+        "avg_delivery_per_product": efficiency,
+        "total_products_sold": total_products_sold
+    }
+
 
 
 
