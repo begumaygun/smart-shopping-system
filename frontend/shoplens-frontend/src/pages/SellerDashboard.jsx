@@ -5,6 +5,8 @@ import {
   XAxis, YAxis, Tooltip, ResponsiveContainer
 } from "recharts";
 import StatCard from "../components/StatCard";
+import ReturnRateChart from "../components/ReturnRateChart";
+
 
 const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7f50', '#00c49f'];
 
