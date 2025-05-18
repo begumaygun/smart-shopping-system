@@ -54,6 +54,13 @@ def get_all_users():
         print("[HATA - /all-users]:", e)
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/seller-orders/{email}")
+def get_orders_by_seller(email: str):
+    df = pd.read_csv("path/to/your/orders.csv", sep=";")  # emin ol doğru dosya
+    filtered_orders = df[df["seller_email"] == email]
+    return filtered_orders[["order_id", "is_returned", "product_id", ...]].to_dict(orient="records")
+
+
 
 @app.get("/")
 def read_root():
