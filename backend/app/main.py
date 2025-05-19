@@ -11,7 +11,7 @@ app = FastAPI()
 # CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  
+    allow_origins=["*"],  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -54,11 +54,6 @@ def get_all_users():
         print("[HATA - /all-users]:", e)
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/seller-orders/{email}")
-def get_orders_by_seller(email: str):
-    df = pd.read_csv("path/to/your/orders.csv", sep=";")  # emin ol doğru dosya
-    filtered_orders = df[df["seller_email"] == email]
-    return filtered_orders[["order_id", "is_returned", "product_id", ...]].to_dict(orient="records")
 
 
 
@@ -147,7 +142,7 @@ def get_seller_orders(email: str):
     if seller_orders.empty:
         return []
 
-    expected_cols = ["customer_city", "product_category"] 
+    expected_cols = ["customer_city", "product_category","is_returned","repeat_purchase_ratio"]
 
     for col in expected_cols:
         if col not in df.columns:
@@ -162,6 +157,37 @@ def get_avg_delivery(seller_id: str):
         raise HTTPException(status_code=404, detail="Satıcı bulunamadı.")
     avg_days = round(seller_df["delivery_days"].mean(), 1)
     return {"seller_id": seller_id, "avg_delivery_days": avg_days}
+
+@app.get("/seller-review-score/{email}")
+def get_avg_review_score(email: str):
+    users_df = pd.read_csv("../app/data/All_Data_MailPassword_withRoles.csv", sep=";")
+    user_row = users_df[users_df["email"] == email]
+
+    if user_row.empty:
+        raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı")
+    
+    seller_id = user_row.iloc[0]["seller_id"]
+
+    # Ana sipariş veri setini yükle
+    df = pd.read_csv("../app/data/shoplens_temiz_veri_cleaned.csv", sep=";")
+
+    seller_data = df[df["seller_id"] == seller_id]
+
+    if seller_data.empty:
+        raise HTTPException(status_code=404, detail="Satıcıya ait sipariş verisi yok")
+
+    avg_score = seller_data["review_score"].mean()
+    return {"avg_review_score": round(avg_score, 2)}
+
+@app.get("/seller-repeat-ratio/{seller_id}")
+def get_repeat_purchase_ratio(seller_id: str):
+    seller_df = df[df["seller_id"] == seller_id]
+    if seller_df.empty:
+        return {"repeat_purchase_ratio": 0.0}
+    
+    mean_ratio = seller_df["repeat_purchase_ratio"].astype(float).mean()
+    return {"repeat_purchase_ratio": mean_ratio}
+
 
 @app.get("/seller-efficiency/{email}")
 def get_seller_efficiency(email: str):
