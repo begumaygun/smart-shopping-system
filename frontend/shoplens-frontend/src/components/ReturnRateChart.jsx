@@ -2,7 +2,7 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-const COLORS = ["#00C49F", "#FF8042"]; // Teslim & İade renkleri
+const COLORS = ["#00C49F", "#FF8042"];
 
 const ReturnRateChart = () => {
   const [returnData, setReturnData] = useState([]);
@@ -11,21 +11,20 @@ const ReturnRateChart = () => {
     const fetchOrders = async () => {
       try {
         const email = localStorage.getItem("userEmail");
-        const res = await axios.get("http://localhost:8000/seller-orders/some-seller@email.com");
+        const res = await axios.get(`http://localhost:8000/seller-orders/${email}`);
         const orders = res.data;
 
         const total = orders.length;
-        const returned = orders.filter(order => order.is_returned === 1).length;
+        const returned = orders.filter(order => parseInt(order.is_returned) === 1).length;
         const delivered = total - returned;
 
-       // Yüzde olarak hesapla
         const returnedPercent = ((returned / total) * 100).toFixed(1);
         const deliveredPercent = ((delivered / total) * 100).toFixed(1);
 
-         setReturnData([
-            { name: "Delivered", value: parseFloat(deliveredPercent) },
-            { name: "Returned", value: parseFloat(returnedPercent) }
-  ]);
+        setReturnData([
+          { name: "Delivered", value: parseFloat(deliveredPercent) },
+          { name: "Returned", value: parseFloat(returnedPercent) }
+        ]);
       } catch (err) {
         console.error("Veri alınamadı", err);
       }
@@ -33,13 +32,11 @@ const ReturnRateChart = () => {
 
     fetchOrders();
   }, []);
-  console.log(orders[0]);
-
 
   return (
-    <div className="w-full h-72">
-      <h3 className="text-lg font-bold text-center mb-4">İade Oranı</h3>
-      <ResponsiveContainer>
+    <div className="bg-white shadow-xl rounded-xl p-6">
+      <h3 className="text-xl font-semibold text-gray-700 text-center mb-4">İade Oranı</h3>
+      <ResponsiveContainer width="100%" height={300}>
         <PieChart>
           <Pie
             data={returnData}
@@ -53,8 +50,7 @@ const ReturnRateChart = () => {
               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
             ))}
           </Pie>
-          <Tooltip formatter={(value, name) => [`${value.toFixed(1)}%`, name]} />
-
+          <Tooltip formatter={(value, name) => [`${value}%`, name]} />
         </PieChart>
       </ResponsiveContainer>
     </div>

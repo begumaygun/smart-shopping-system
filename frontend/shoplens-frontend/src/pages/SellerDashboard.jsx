@@ -6,6 +6,8 @@ import {
 } from "recharts";
 import StatCard from "../components/StatCard";
 import ReturnRateChart from "../components/ReturnRateChart";
+import { Repeat } from 'lucide-react';
+
 
 
 const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7f50', '#00c49f'];
@@ -16,14 +18,22 @@ const SellerDashboard = () => {
   const [avgDelivery, setAvgDelivery] = useState(null);
   const [sellerId, setSellerId] = useState("");
   const [efficiency, setEfficiency] = useState(null);
+  const [avgReviewScore, setAvgReviewScore] = useState(null);
+  const [repeatRatio, setRepeatRatio] = useState(0);
+
+
 
   useEffect(() => {
     const storedEmail = localStorage.getItem("userEmail");
     setEmail(storedEmail);
 
+    
+
     const fetchSellerOrders = async () => {
       try {
         const response = await axios.get(`http://localhost:8000/seller-orders/${storedEmail}`);
+        console.log("📦 Gelen siparişler:", orders);
+
         setOrders(response.data);
 
         const userResp = await axios.get("http://localhost:8000/all-users");
@@ -38,6 +48,11 @@ const SellerDashboard = () => {
         // Efficiency (Teslim süresi / ürün)
         const effResp = await axios.get(`http://localhost:8000/seller-efficiency/${storedEmail}`);
         setEfficiency(effResp.data.avg_delivery_per_product);
+
+        // Müşteri memnuniyeti skoru
+        const reviewResp = await axios.get(`http://localhost:8000/seller-review-score/${storedEmail}`);
+        setAvgReviewScore(reviewResp.data.avg_review_score);
+
 
       } catch (error) {
         console.error("Satıcı siparişleri alınamadı:", error);
@@ -71,6 +86,30 @@ const SellerDashboard = () => {
   const uniqueCategories = Object.keys(categoryCounts).length;
   const uniqueCities = Object.keys(cityCounts).length;
 
+ useEffect(() => {
+  if (orders.length > 0) {
+    const validRatios = orders
+      .map(order => {
+        const raw = order.repeat_purchase_ratio;
+        const val = typeof raw === "string" ? parseFloat(raw.replace(",", ".")) : parseFloat(raw);
+        return isNaN(val) ? null : val;
+      })
+      .filter(val => val !== null);
+
+    if (validRatios.length > 0) {
+      const meanRatio = validRatios.reduce((sum, val) => sum + val, 0) / validRatios.length;
+      console.log("⏺️ Ortalama repeat ratio:", meanRatio); // test için ekrana yaz
+      setRepeatRatio(meanRatio);
+    } else {
+      setRepeatRatio(0);
+    }
+  }
+  
+}, [orders]);
+
+
+
+
   return (
     <div className="p-8 bg-orange-50 min-h-screen">
       <h1 className="text-3xl font-bold text-purple-700">Satıcı Paneli</h1>
@@ -84,10 +123,17 @@ const SellerDashboard = () => {
         {avgDelivery !== null && (
         <StatCard title="Ortalama Teslim Süresi" value={`${avgDelivery} gün`} icon="🚚" />
         )}
-
-        {efficiency !== null && (
+         {efficiency !== null && (
         <StatCard title="Ürün Başına Teslim Süresi" value={`${efficiency} gün`} icon="⏱️" />
         )}
+         {avgReviewScore !== null && (
+        <StatCard title="Müşteri Memnuniyeti" value={avgReviewScore} icon="stars" />
+      )}
+      <StatCard title="Tekrar Alışveriş Oranı" value={`${(repeatRatio * 100).toFixed(1)}%`} icon={<Repeat className="text-orange-500" />}
+/>
+
+      
+
       </div>
 
 
@@ -131,6 +177,8 @@ const SellerDashboard = () => {
               </PieChart>
             </ResponsiveContainer>
           </div>
+          {/* İade Oranı */}
+          <ReturnRateChart />
         </div>
       )}
     </div>
