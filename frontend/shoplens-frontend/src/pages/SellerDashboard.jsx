@@ -7,6 +7,7 @@ import {
 import StatCard from "../components/StatCard";
 import ReturnRateChart from "../components/ReturnRateChart";
 import { Repeat } from 'lucide-react';
+import StockStatus from "../components/StockStatus";
 
 
 
@@ -176,6 +177,10 @@ const SellerDashboard = () => {
                 <Tooltip />
               </PieChart>
             </ResponsiveContainer>
+             
+          </div>
+          <div className="md:col-span-2">
+            <StockStatus />
           </div>
           {/* İade Oranı */}
           <ReturnRateChart />

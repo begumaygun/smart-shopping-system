@@ -11,11 +11,13 @@ app = FastAPI()
 # CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  
+    allow_origins=["http://localhost:5173"],  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
 
 # Ana veri seti
 df = pd.read_csv("../app/data/shoplens_temiz_veri_cleaned.csv", sep=";")
@@ -96,6 +98,8 @@ def get_top_categories():
     top_counts = df["product_category"].value_counts().head(5)
     return top_counts.to_dict()
 
+
+
 # GİRİŞ KONTROLÜ
 @app.post("/login")
 def login(request: LoginRequest):
@@ -142,7 +146,7 @@ def get_seller_orders(email: str):
     if seller_orders.empty:
         return []
 
-    expected_cols = ["customer_city", "product_category","is_returned","repeat_purchase_ratio"]
+    expected_cols = ["customer_city", "product_category","is_returned","repeat_purchase_ratio","product_stock"]
 
     for col in expected_cols:
         if col not in df.columns:
@@ -188,6 +192,36 @@ def get_repeat_purchase_ratio(seller_id: str):
     mean_ratio = seller_df["repeat_purchase_ratio"].astype(float).mean()
     return {"repeat_purchase_ratio": mean_ratio}
 
+@app.get("/seller-stock/{email}")
+def get_seller_stock(email: str):
+    seller_row = users_df[users_df["email"] == email]
+    if seller_row.empty:
+        raise HTTPException(status_code=404, detail="Satıcı bulunamadı")
+
+    seller_id = seller_row["seller_id"].values[0]
+
+    # Bu seller'a ait siparişler
+    seller_data = df[df["seller_id"] == seller_id]
+
+    if "product_category" not in seller_data.columns or "product_stock" not in seller_data.columns:
+        raise HTTPException(status_code=500, detail="Gerekli sütunlar eksik!")
+
+    # En güncel sipariş tarihine göre sıralayıp her kategori için bir satır al
+    seller_data = seller_data.sort_values("last_order_date", ascending=False)
+    latest_stock = seller_data.drop_duplicates(subset=["product_category"])
+
+    result = latest_stock[["product_category", "product_stock"]].to_dict(orient="records")
+
+    # Kritik stok uyarıları (<10)
+    critical = [item for item in result if item["product_stock"] < 10]
+
+    return {
+        "all_stock": result,
+        "critical_stock": critical
+    }
+
+
+
 
 @app.get("/seller-efficiency/{email}")
 def get_seller_efficiency(email: str):
@@ -223,6 +257,68 @@ def get_seller_efficiency(email: str):
         "avg_delivery_per_product": efficiency,
         "total_products_sold": total_products_sold
     }
+@app.get("/user-persona/{email}")
+def get_user_persona(email: str):
+    user_row = users_df[users_df["email"] == email]
+    if user_row.empty:
+        raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı")
+
+    customer_id = user_row["customer_unique_id"].values[0]
+
+    # Persona verisini oku
+    persona_df = pd.read_csv("../app/data/shoplens_with_persona_codes.csv", sep=";")
+    persona_row = persona_df[persona_df["customer_unique_id"] == customer_id]
+
+    if persona_row.empty:
+        raise HTTPException(status_code=404, detail="Persona bulunamadı")
+
+    return {
+        "customer_id": customer_id,
+        "persona_code": persona_row["persona_code"].values[0],
+        "review_style": persona_row["persona_review_score"].values[0],
+        "order_style": persona_row["persona_order_value"].values[0],
+        "repeat_style": persona_row["persona_repeat_ratio"].values[0],
+        "weight_style": persona_row["persona_product_weight"].values[0],
+        "activity_style": persona_row["persona_active_days"].values[0]
+    }
+@app.get("/customer-orders-by-month/{email}")
+def get_customer_orders_by_month(email: str):
+    user_row = users_df[users_df["email"] == email]
+    if user_row.empty:
+        raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı")
+
+    customer_id = user_row["customer_unique_id"].values[0]
+    customer_orders = df[df["customer_unique_id"] == customer_id]
+
+    if customer_orders.empty:
+        return {}
+
+    customer_orders["order_purchase_timestamp"] = pd.to_datetime(customer_orders["order_purchase_timestamp"])
+    customer_orders["month"] = customer_orders["order_purchase_timestamp"].dt.strftime("%B")
+
+    month_counts = customer_orders["month"].value_counts().to_dict()
+
+    # Opsiyonel: Ay sırasına göre düzeltme
+    month_order = ["January", "February", "March", "April", "May", "June",
+                   "July", "August", "September", "October", "November", "December"]
+    sorted_months = {month: month_counts.get(month, 0) for month in month_order}
+
+    return sorted_months
+@app.get("/customer-category-distribution/{email}")
+def get_customer_category_distribution(email: str):
+    user_row = users_df[users_df["email"] == email]
+    if user_row.empty:
+        raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı")
+
+    customer_id = user_row["customer_unique_id"].values[0]
+    customer_orders = df[df["customer_unique_id"] == customer_id]
+
+    if customer_orders.empty:
+        return {}
+
+    counts = customer_orders["product_category"].value_counts().to_dict()
+    return counts
+
 
 
 

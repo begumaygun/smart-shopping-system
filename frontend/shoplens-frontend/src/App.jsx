@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import SellerDashboard from './pages/SellerDashboard';
+import CustomerDashboard from './pages/CustomerDashboard';
 
 function App() {
   return (
@@ -12,6 +13,8 @@ function App() {
         <Route path="/homepage" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/seller-dashboard" element={<SellerDashboard />} />
+        <Route path="/customer-dashboard" element={<CustomerDashboard />} />
+
       </Routes>
     </Router>
   );
