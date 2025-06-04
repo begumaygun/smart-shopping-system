@@ -4,6 +4,7 @@ import Sidebar from "../components/Sidebar";
 import CustomerPersonaCard from "../components/CustomerPersonaCard";
 import OrderTrendsChart from "../components/OrderTrendsChart";
 import CategoryPieChart from "../components/CategoryPieChart";
+import Chatbot from "../components/Chatbot";
 
 
 
@@ -25,12 +26,12 @@ const CustomerDashboard = () => {
         <div className="flex-1 p-6 overflow-auto space-y-8">
           {/* Persona Kartı */}
           <CustomerPersonaCard email={email} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <OrderTrendsChart email={email} />
+            <CategoryPieChart email={email} />
+          </div>
+          <Chatbot />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-  <OrderTrendsChart email={email} />
-  <CategoryPieChart email={email} />
-</div>
-
       </div>
     </div>
   );

@@ -1,0 +1,331 @@
+diff --git a/README.md b/README.md
+index 47303b50d35e94ab6a5fcab33e44516507bc753e..4b0337e0ffb6aad9f27c6786bec407109820910c 100644
+--- a/README.md
++++ b/README.md
+@@ -1,2 +1,22 @@
+-# smart-shopping-system
+-AI-supported customer profiling and data visualization project
++# Smart Shopping System
++
++This project contains a FastAPI backend and a React frontend for customer profiling and analytics.
++
++## Running the backend
++
++```bash
++pip install -r backend/requirements.txt
++uvicorn backend.app.main:app --reload
++```
++
++## Running the frontend
++
++```bash
++cd frontend/shoplens-frontend
++npm install
++npm run dev
++```
++
++## Chatbot
++
++Both the seller and customer dashboards now include a simple chatbot. Type a question such as `top categories` or `review score` to see data driven responses.
+diff --git a/backend/app/main.py b/backend/app/main.py
+index 22ae9d11b873decb8cf2c4fdd0422d11895ce1f8..611ca8e736bc9bbdaaef154b388b8701ce3e7d5d 100644
+--- a/backend/app/main.py
++++ b/backend/app/main.py
+@@ -25,50 +25,53 @@ df = pd.read_csv("../app/data/shoplens_temiz_veri_cleaned.csv", sep=";")
+ 
+ # Kullanıcı e-posta + şifreleri (giriş kontrolü için)
+ users_df = pd.read_csv("../app/data/All_Data_MailPassword_withRoles.csv", sep=";")
+ user_dict = dict(zip(users_df["email"], users_df["password"]))
+ 
+ 
+ # MODELLER
+ class LoginRequest(BaseModel):
+     email: str
+     password: str
+ 
+ class LoginEmail(BaseModel):
+     email: str
+ 
+ class CustomerData(BaseModel):
+     total_orders: int
+     avg_order_value: float
+     category_diversity: int
+     avg_review_score: float
+     unique_product_count: int
+     payment_type_diversity: int
+     avg_product_weight: float
+     active_days: int
+     repeat_purchase_ratio: float
+ 
++class ChatRequest(BaseModel):
++    message: str
++
+ # ENDPOINTLER
+ @app.get("/all-users")
+ def get_all_users():
+     try:
+         return users_df[["email", "seller_id", "role"]].head(20).to_dict(orient="records")
+     except Exception as e:
+         print("[HATA - /all-users]:", e)
+         raise HTTPException(status_code=500, detail=str(e))
+ 
+ 
+ 
+ 
+ @app.get("/")
+ def read_root():
+     return {"message": "ShopLens API is working."}
+ 
+ @app.post("/predict_persona")
+ def predict(data: CustomerData):
+     input_dict = data.dict()
+     result = predict_persona(input_dict)
+     return {"persona": result}
+ 
+ sample_customers = {
+     "123": {
+         "name": "John Doe",
+@@ -76,50 +79,62 @@ sample_customers = {
+         "total_orders": 12,
+         "avg_order_value": 43.5,
+         "avg_review_score": 4.2
+     },
+     "456": {
+         "name": "Jane Smith",
+         "segment": "Sadık Müşteri",
+         "total_orders": 28,
+         "avg_order_value": 87.2,
+         "avg_review_score": 4.8
+     }
+ }
+ 
+ @app.get("/customer/{customer_id}")
+ def get_customer(customer_id: str):
+     customer = sample_customers.get(customer_id)
+     if customer:
+         return customer
+     return {"error": "Customer not found"}
+ 
+ @app.get("/top-categories")
+ def get_top_categories():
+     top_counts = df["product_category"].value_counts().head(5)
+     return top_counts.to_dict()
+ 
++@app.post("/chat")
++def chat(req: ChatRequest):
++    message = req.message.lower()
++    if "top categories" in message:
++        top_counts = df["product_category"].value_counts().head(3)
++        summary = ", ".join([f"{k} ({v})" for k, v in top_counts.to_dict().items()])
++        return {"reply": f"Top categories: {summary}"}
++    if "review score" in message:
++        avg = round(df["review_score"].mean(), 2)
++        return {"reply": f"Average review score is {avg}."}
++    return {"reply": "Sorry, I can answer about top categories or review score."}
++
+ 
+ 
+ # GİRİŞ KONTROLÜ
+ @app.post("/login")
+ def login(request: LoginRequest):
+     if request.email in user_dict:
+         if request.password == user_dict[request.email]:
+             user_row = users_df[users_df["email"] == request.email]
+             role = user_row["role"].values[0] if not user_row.empty else "customer"
+             return {"message": "Giriş başarılı", "role": role}
+         else:
+             raise HTTPException(status_code=401, detail="Hatalı şifre")
+     else:
+         raise HTTPException(status_code=404, detail="E-posta bulunamadı")
+ 
+ 
+ # GİRİŞ LOG SİSTEMİ
+ last_login = {}
+ 
+ @app.post("/login-log")
+ def log_login(data: LoginEmail):
+     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+     last_login[data.email] = now
+     print(f"Giriş yapan: {data.email} - Zaman: {now}")
+     return {"message": f"{data.email} giriş yaptı"}
+diff --git a/frontend/shoplens-frontend/src/components/Chatbot.jsx b/frontend/shoplens-frontend/src/components/Chatbot.jsx
+new file mode 100644
+index 0000000000000000000000000000000000000000..bcbb43fc4cc8339b6292ac00b9d59d55e89e6d26
+--- /dev/null
++++ b/frontend/shoplens-frontend/src/components/Chatbot.jsx
+@@ -0,0 +1,49 @@
++import { useState } from 'react';
++import axios from 'axios';
++
++const Chatbot = () => {
++  const [messages, setMessages] = useState([]);
++  const [input, setInput] = useState('');
++
++  const sendMessage = async () => {
++    if (!input.trim()) return;
++    const userMsg = { from: 'user', text: input };
++    setMessages(msgs => [...msgs, userMsg]);
++    try {
++      const res = await axios.post('http://localhost:8000/chat', { message: input });
++      const botMsg = { from: 'bot', text: res.data.reply };
++      setMessages(msgs => [...msgs, botMsg]);
++    } catch (err) {
++      setMessages(msgs => [...msgs, { from: 'bot', text: 'Server error.' }]);
++    }
++    setInput('');
++  };
++
++  return (
++    <div className="bg-white shadow-md rounded p-4">
++      <div className="h-64 overflow-y-auto mb-4 space-y-2">
++        {messages.map((m, i) => (
++          <div key={i} className={m.from === 'user' ? 'text-right' : 'text-left'}>
++            <span className="inline-block px-3 py-1 rounded bg-gray-200">
++              {m.text}
++            </span>
++          </div>
++        ))}
++      </div>
++      <div className="flex">
++        <input
++          className="flex-1 border p-2 rounded-l"
++          value={input}
++          onChange={e => setInput(e.target.value)}
++          onKeyDown={e => e.key === 'Enter' && sendMessage()}
++          placeholder="Ask something..."
++        />
++        <button onClick={sendMessage} className="bg-blue-500 text-white px-4 rounded-r">
++          Send
++        </button>
++      </div>
++    </div>
++  );
++};
++
++export default Chatbot;
+diff --git a/frontend/shoplens-frontend/src/pages/CustomerDashboard.jsx b/frontend/shoplens-frontend/src/pages/CustomerDashboard.jsx
+index 22af6713483c6585a530871f120374c7d0c25b2e..efce7101181c852e45dfdef0f6158cd52c915e14 100644
+--- a/frontend/shoplens-frontend/src/pages/CustomerDashboard.jsx
++++ b/frontend/shoplens-frontend/src/pages/CustomerDashboard.jsx
+@@ -1,39 +1,40 @@
+ import React, { useEffect, useState } from "react";
+ import Topbar from "../components/Topbar";
+ import Sidebar from "../components/Sidebar";
+ import CustomerPersonaCard from "../components/CustomerPersonaCard";
+ import OrderTrendsChart from "../components/OrderTrendsChart";
+ import CategoryPieChart from "../components/CategoryPieChart";
++import Chatbot from "../components/Chatbot";
+ 
+ 
+ 
+ const CustomerDashboard = () => {
+   const [email, setEmail] = useState("");
+ 
+   useEffect(() => {
+     const storedEmail = localStorage.getItem("userEmail");
+     if (storedEmail) {
+       setEmail(storedEmail);
+     }
+   }, []);
+ 
+   return (
+     <div className="bg-[#e9944e] min-h-screen">
+       <Topbar />
+       <div className="flex">
+         <Sidebar />
+         <div className="flex-1 p-6 overflow-auto space-y-8">
+           {/* Persona Kartı */}
+           <CustomerPersonaCard email={email} />
++          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
++            <OrderTrendsChart email={email} />
++            <CategoryPieChart email={email} />
++          </div>
++          <Chatbot />
+         </div>
+-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+-  <OrderTrendsChart email={email} />
+-  <CategoryPieChart email={email} />
+-</div>
+-
+       </div>
+     </div>
+   );
+ };
+ 
+ export default CustomerDashboard;
+diff --git a/frontend/shoplens-frontend/src/pages/SellerDashboard.jsx b/frontend/shoplens-frontend/src/pages/SellerDashboard.jsx
+index 474745380067856c03faeff22849872153fe7fbc..007b359801317ee63fa6f78b758963b43833c1f1 100644
+--- a/frontend/shoplens-frontend/src/pages/SellerDashboard.jsx
++++ b/frontend/shoplens-frontend/src/pages/SellerDashboard.jsx
+@@ -1,35 +1,36 @@
+ import { useEffect, useState } from "react";
+ import axios from "axios";
+ import {
+   BarChart, Bar, PieChart, Pie, Cell,
+   XAxis, YAxis, Tooltip, ResponsiveContainer
+ } from "recharts";
+ import StatCard from "../components/StatCard";
+ import ReturnRateChart from "../components/ReturnRateChart";
+ import { Repeat } from 'lucide-react';
+ import StockStatus from "../components/StockStatus";
++import Chatbot from "../components/Chatbot";
+ 
+ 
+ 
+ const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7f50', '#00c49f'];
+ 
+ const SellerDashboard = () => {
+   const [orders, setOrders] = useState([]);
+   const [email, setEmail] = useState("");
+   const [avgDelivery, setAvgDelivery] = useState(null);
+   const [sellerId, setSellerId] = useState("");
+   const [efficiency, setEfficiency] = useState(null);
+   const [avgReviewScore, setAvgReviewScore] = useState(null);
+   const [repeatRatio, setRepeatRatio] = useState(0);
+ 
+ 
+ 
+   useEffect(() => {
+     const storedEmail = localStorage.getItem("userEmail");
+     setEmail(storedEmail);
+ 
+     
+ 
+     const fetchSellerOrders = async () => {
+       try {
+         const response = await axios.get(`http://localhost:8000/seller-orders/${storedEmail}`);
+@@ -164,31 +165,34 @@ const SellerDashboard = () => {
+                 <Pie
+                   data={categoryData}
+                   dataKey="value"
+                   nameKey="name"
+                   cx="50%"
+                   cy="50%"
+                   outerRadius={100}
+                   label
+                 >
+                   {categoryData.map((_, index) => (
+                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                   ))}
+                 </Pie>
+                 <Tooltip />
+               </PieChart>
+             </ResponsiveContainer>
+              
+           </div>
+           <div className="md:col-span-2">
+             <StockStatus />
+           </div>
+           {/* İade Oranı */}
+           <ReturnRateChart />
+         </div>
+       )}
++      <div className="mt-10 max-w-xl">
++        <Chatbot />
++      </div>
+     </div>
+   );
+ };
+ 
+ 
+ export default SellerDashboard;
