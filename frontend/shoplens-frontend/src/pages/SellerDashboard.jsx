@@ -8,6 +8,7 @@ import StatCard from "../components/StatCard";
 import ReturnRateChart from "../components/ReturnRateChart";
 import { Repeat } from 'lucide-react';
 import StockStatus from "../components/StockStatus";
+import Chatbot from "../components/Chatbot";
 
 
 
@@ -186,6 +187,9 @@ const SellerDashboard = () => {
           <ReturnRateChart />
         </div>
       )}
+      <div className="mt-10 max-w-xl">
+        <Chatbot />
+      </div>
     </div>
   );
 };
