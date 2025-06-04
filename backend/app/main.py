@@ -47,6 +47,9 @@ class CustomerData(BaseModel):
     active_days: int
     repeat_purchase_ratio: float
 
+class ChatRequest(BaseModel):
+    message: str
+
 # ENDPOINTLER
 @app.get("/all-users")
 def get_all_users():
@@ -97,6 +100,18 @@ def get_customer(customer_id: str):
 def get_top_categories():
     top_counts = df["product_category"].value_counts().head(5)
     return top_counts.to_dict()
+
+@app.post("/chat")
+def chat(req: ChatRequest):
+    message = req.message.lower()
+    if "top categories" in message:
+        top_counts = df["product_category"].value_counts().head(3)
+        summary = ", ".join([f"{k} ({v})" for k, v in top_counts.to_dict().items()])
+        return {"reply": f"Top categories: {summary}"}
+    if "review score" in message:
+        avg = round(df["review_score"].mean(), 2)
+        return {"reply": f"Average review score is {avg}."}
+    return {"reply": "Sorry, I can answer about top categories or review score."}
 
 
 
