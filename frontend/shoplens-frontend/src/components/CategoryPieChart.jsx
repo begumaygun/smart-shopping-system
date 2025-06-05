@@ -47,7 +47,9 @@ const CategoryPieChart = ({ email }) => {
               cx="50%"
               cy="50%"
               outerRadius={120}
-              label
+              label={({ name, percent }) =>
+                `${name}: ${(percent * 100).toFixed(1)}%`
+              }
             >
               {data.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />

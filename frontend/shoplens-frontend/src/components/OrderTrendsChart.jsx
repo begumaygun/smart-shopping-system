@@ -45,14 +45,18 @@ const OrderTrendsChart = ({ email }) => {
         <ResponsiveContainer width="100%" height="85%">
           <BarChart data={chartData}>
             <XAxis
-  dataKey="month"
-  interval={0}
-  angle={-45}
-  textAnchor="end"
-  tick={{ fontSize: 11 }}
-  height={70}
-/>
-            <YAxis allowDecimals={false} />
+              dataKey="month"
+              interval={0}
+              angle={-45}
+              textAnchor="end"
+              tick={{ fontSize: 11 }}
+              height={70}
+              label={{ value: "Ay", position: "insideBottom", offset: -5 }}
+            />
+            <YAxis
+              allowDecimals={false}
+              label={{ value: "Sipariş", angle: -90, position: "insideLeft" }}
+            />
             <Tooltip />
             <Bar dataKey="count" fill="#f97316" />
           </BarChart>
