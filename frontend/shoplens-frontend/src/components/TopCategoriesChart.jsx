@@ -29,10 +29,16 @@ const TopCategoriesChart = () => {
       <h2 className="text-xl font-bold mb-4">Popular Categories</h2>
       <ResponsiveContainer width="100%" height="80%">
         <BarChart data={data}>
-          <XAxis dataKey="name" angle={0}
+          <XAxis
+            dataKey="name"
+            interval={0}
+            angle={-45}
             textAnchor="end"
-            interval={0}/>
-          <YAxis />
+            label={{ value: "Kategori", position: "insideBottom", offset: -5 }}
+          />
+          <YAxis
+            label={{ value: "Adet", angle: -90, position: "insideLeft" }}
+          />
           <Tooltip />
           <Bar dataKey="count" fill="#f97316" />
         </BarChart>

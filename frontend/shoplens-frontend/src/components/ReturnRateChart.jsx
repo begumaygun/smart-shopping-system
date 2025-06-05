@@ -42,7 +42,7 @@ const ReturnRateChart = () => {
             data={returnData}
             cx="50%"
             cy="50%"
-            label
+            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
             outerRadius={80}
             dataKey="value"
           >

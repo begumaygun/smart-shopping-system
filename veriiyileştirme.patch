@@ -1,0 +1,366 @@
+diff --git a/frontend/shoplens-frontend/src/components/CategoryPieChart.jsx b/frontend/shoplens-frontend/src/components/CategoryPieChart.jsx
+index 31da0bbf3badfb8d35eb2ce765d3632399aaf9bc..5e1b618baf20fe1e123a3801cc38c2b700092131 100644
+--- a/frontend/shoplens-frontend/src/components/CategoryPieChart.jsx
++++ b/frontend/shoplens-frontend/src/components/CategoryPieChart.jsx
+@@ -25,41 +25,43 @@ const CategoryPieChart = ({ email }) => {
+           const formatted = Object.entries(res.data).map(([name, value]) => ({
+             name,
+             value,
+           }));
+           setData(formatted);
+         })
+         .catch((err) => console.error("Kategori verisi alınamadı:", err));
+     }
+   }, [email]);
+ 
+   return (
+     <div className="bg-white p-6 rounded-xl shadow-md h-[400px]">
+       <h2 className="text-lg font-bold text-gray-700 mb-4">🛍️ En Çok Alışveriş Yapılan Kategoriler</h2>
+       {data.length === 0 ? (
+         <p className="text-gray-500">Veri bulunamadı.</p>
+       ) : (
+         <ResponsiveContainer width="100%" height="90%">
+           <PieChart>
+             <Pie
+               data={data}
+               dataKey="value"
+               nameKey="name"
+               cx="50%"
+               cy="50%"
+               outerRadius={120}
+-              label
++              label={({ name, percent }) =>
++                `${name}: ${(percent * 100).toFixed(1)}%`
++              }
+             >
+               {data.map((entry, index) => (
+                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+               ))}
+             </Pie>
+             <Tooltip />
+             <Legend />
+           </PieChart>
+         </ResponsiveContainer>
+       )}
+     </div>
+   );
+ };
+ 
+ export default CategoryPieChart;
+diff --git a/frontend/shoplens-frontend/src/components/OrderTrendsChart.jsx b/frontend/shoplens-frontend/src/components/OrderTrendsChart.jsx
+index 1c7d270831e504744602550f887c7c48fe2538b9..775d2912360e308360e13a6c243029664d54bdda 100644
+--- a/frontend/shoplens-frontend/src/components/OrderTrendsChart.jsx
++++ b/frontend/shoplens-frontend/src/components/OrderTrendsChart.jsx
+@@ -23,43 +23,47 @@ const OrderTrendsChart = ({ email }) => {
+           const allMonths = [
+             "January", "February", "March", "April", "May", "June",
+             "July", "August", "September", "October", "November", "December"
+           ];
+ 
+           const formatted = allMonths.map((month) => ({
+             month,
+             count: raw[month] || 0,
+           }));
+ 
+           setChartData(formatted);
+         })
+         .catch((err) => console.error("Sipariş trendi verisi alınamadı:", err));
+     }
+   }, [email]);
+ 
+   return (
+     <div className="bg-white p-6 rounded-xl shadow-md h-[400px]">
+       <h2 className="text-lg font-bold text-gray-700 mb-4">📅 Aylık Sipariş Dağılımı</h2>
+       {chartData.length === 0 ? (
+         <p className="text-gray-500">Veri bulunamadı.</p>
+       ) : (
+         <ResponsiveContainer width="100%" height="85%">
+           <BarChart data={chartData}>
+             <XAxis
+-  dataKey="month"
+-  interval={0}
+-  angle={-45}
+-  textAnchor="end"
+-  tick={{ fontSize: 11 }}
+-  height={70}
+-/>
+-            <YAxis allowDecimals={false} />
++              dataKey="month"
++              interval={0}
++              angle={-45}
++              textAnchor="end"
++              tick={{ fontSize: 11 }}
++              height={70}
++              label={{ value: "Ay", position: "insideBottom", offset: -5 }}
++            />
++            <YAxis
++              allowDecimals={false}
++              label={{ value: "Sipariş", angle: -90, position: "insideLeft" }}
++            />
+             <Tooltip />
+             <Bar dataKey="count" fill="#f97316" />
+           </BarChart>
+         </ResponsiveContainer>
+       )}
+     </div>
+   );
+ };
+ 
+ export default OrderTrendsChart;
+diff --git a/frontend/shoplens-frontend/src/components/ReturnRateChart.jsx b/frontend/shoplens-frontend/src/components/ReturnRateChart.jsx
+index 9e831e9922de2941904c81ba7f1614c4c519ebc4..59680c67c8b1c449dadbdbcec2541e20e102e9c8 100644
+--- a/frontend/shoplens-frontend/src/components/ReturnRateChart.jsx
++++ b/frontend/shoplens-frontend/src/components/ReturnRateChart.jsx
+@@ -20,41 +20,41 @@ const ReturnRateChart = () => {
+ 
+         const returnedPercent = ((returned / total) * 100).toFixed(1);
+         const deliveredPercent = ((delivered / total) * 100).toFixed(1);
+ 
+         setReturnData([
+           { name: "Delivered", value: parseFloat(deliveredPercent) },
+           { name: "Returned", value: parseFloat(returnedPercent) }
+         ]);
+       } catch (err) {
+         console.error("Veri alınamadı", err);
+       }
+     };
+ 
+     fetchOrders();
+   }, []);
+ 
+   return (
+     <div className="bg-white shadow-xl rounded-xl p-6">
+       <h3 className="text-xl font-semibold text-gray-700 text-center mb-4">İade Oranı</h3>
+       <ResponsiveContainer width="100%" height={300}>
+         <PieChart>
+           <Pie
+             data={returnData}
+             cx="50%"
+             cy="50%"
+-            label
++            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
+             outerRadius={80}
+             dataKey="value"
+           >
+             {returnData.map((entry, index) => (
+               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+             ))}
+           </Pie>
+           <Tooltip formatter={(value, name) => [`${value}%`, name]} />
+         </PieChart>
+       </ResponsiveContainer>
+     </div>
+   );
+ };
+ 
+ export default ReturnRateChart;
+diff --git a/frontend/shoplens-frontend/src/components/StockStatus.jsx b/frontend/shoplens-frontend/src/components/StockStatus.jsx
+index 44e5eca79e5acc425686e271cdff355871fd1469..958446f52c05e61159a9a8ce8e4a3a896223d162 100644
+--- a/frontend/shoplens-frontend/src/components/StockStatus.jsx
++++ b/frontend/shoplens-frontend/src/components/StockStatus.jsx
+@@ -8,55 +8,58 @@ const StockStatus = () => {
+ 
+   const email = localStorage.getItem("userEmail"); // 🔧 Giriş yapan kullanıcının maili
+ 
+   useEffect(() => {
+     if (email) {
+       axios.get(`http://localhost:8000/seller-stock/${email}`)
+         .then((res) => {
+           console.log("📊 Gelen stok verisi:", res.data);
+           setStockData(res.data.all_stock);
+           setCriticalList(res.data.critical_stock);
+         })
+         .catch((err) => console.error("Stok verisi alınamadı:", err));
+     }
+   }, [email]);
+ 
+   return (
+     <div className="p-4 bg-white rounded-xl shadow-lg my-6">
+       <h2 className="text-xl font-bold mb-4">📦 Stok Durumu</h2>
+ 
+       {stockData.length === 0 ? (
+         <p className="text-gray-500">Gösterilecek stok verisi yok.</p>
+       ) : (
+         <ResponsiveContainer width="100%" height={300}>
+           <BarChart data={stockData.slice(0, 20)} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+             <XAxis
+-  dataKey="product_category"
+-  interval={0}
+-  angle={-45}
+-  textAnchor="end"
+-  tick={{ fontSize: 11 }}
+-  height={70}
+-/>
+-            <YAxis />
++              dataKey="product_category"
++              interval={0}
++              angle={-45}
++              textAnchor="end"
++              tick={{ fontSize: 11 }}
++              height={70}
++              label={{ value: "Kategori", position: "insideBottom", offset: -5 }}
++            />
++            <YAxis
++              label={{ value: "Stok", angle: -90, position: "insideLeft" }}
++            />
+             <Tooltip />
+             <Bar dataKey="product_stock" fill="#8884d8" />
+           </BarChart>
+         </ResponsiveContainer>
+       )}
+ 
+       {criticalList.length > 0 && (
+         <div className="mt-6">
+           <h3 className="text-red-600 font-semibold">⚠ Kritik Stoktaki Ürünler (stok {"<"} 10)</h3>
+           <ul className="list-disc list-inside text-sm">
+             {criticalList.map((item, idx) => (
+               <li key={idx}>Kategori: <b>{item.product_category}</b> — Stok: {item.product_stock}</li>
+             ))}
+           </ul>
+         </div>
+       )}
+     </div>
+   );
+ };
+ 
+ export default StockStatus;
+ 
+diff --git a/frontend/shoplens-frontend/src/components/TopCategoriesChart.jsx b/frontend/shoplens-frontend/src/components/TopCategoriesChart.jsx
+index 5cdb92c5485c568b0241b66bbbaf0daaef0dc5fa..68d47505467e03ea7cfcea467be3a0997b6c7017 100644
+--- a/frontend/shoplens-frontend/src/components/TopCategoriesChart.jsx
++++ b/frontend/shoplens-frontend/src/components/TopCategoriesChart.jsx
+@@ -7,38 +7,44 @@ const TopCategoriesChart = () => {
+ 
+   useEffect(() => {
+     axios
+       .get("http://localhost:8000/top-categories")
+       .then((res) => {
+         const formatted = Object.entries(res.data).map(([name, count]) => ({
+           name: name
+           .replace("_", " ")
+           .replace("computers accessories", "computers")
+           .replace("furniture decor", "furniture"),
+           count,
+ 
+         }));
+         setData(formatted);
+       })
+       .catch((error) => {
+         console.error("Veri çekme hatası:", error.message);
+       });
+   }, []);
+ 
+   return (
+     <div className="bg-white p-6 rounded-2xl shadow-md w-full h-96">
+       <h2 className="text-xl font-bold mb-4">Popular Categories</h2>
+       <ResponsiveContainer width="100%" height="80%">
+         <BarChart data={data}>
+-          <XAxis dataKey="name" angle={0}
++          <XAxis
++            dataKey="name"
++            interval={0}
++            angle={-45}
+             textAnchor="end"
+-            interval={0}/>
+-          <YAxis />
++            label={{ value: "Kategori", position: "insideBottom", offset: -5 }}
++          />
++          <YAxis
++            label={{ value: "Adet", angle: -90, position: "insideLeft" }}
++          />
+           <Tooltip />
+           <Bar dataKey="count" fill="#f97316" />
+         </BarChart>
+       </ResponsiveContainer>
+     </div>
+   );
+ };
+ 
+ export default TopCategoriesChart;
+diff --git a/frontend/shoplens-frontend/src/pages/SellerDashboard.jsx b/frontend/shoplens-frontend/src/pages/SellerDashboard.jsx
+index 007b359801317ee63fa6f78b758963b43833c1f1..4363803aef724184a278e6a797583039fb89734e 100644
+--- a/frontend/shoplens-frontend/src/pages/SellerDashboard.jsx
++++ b/frontend/shoplens-frontend/src/pages/SellerDashboard.jsx
+@@ -127,71 +127,79 @@ const SellerDashboard = () => {
+         )}
+          {efficiency !== null && (
+         <StatCard title="Ürün Başına Teslim Süresi" value={`${efficiency} gün`} icon="⏱️" />
+         )}
+          {avgReviewScore !== null && (
+         <StatCard title="Müşteri Memnuniyeti" value={avgReviewScore} icon="stars" />
+       )}
+       <StatCard title="Tekrar Alışveriş Oranı" value={`${(repeatRatio * 100).toFixed(1)}%`} icon={<Repeat className="text-orange-500" />}
+ />
+ 
+       
+ 
+       </div>
+ 
+ 
+ 
+       {orders.length === 0 ? (
+         <p className="mt-10 text-gray-500">Henüz sipariş yok.</p>
+       ) : (
+         <div className="grid md:grid-cols-2 gap-12 mt-10">
+           {/* Şehir Dağılımı */}
+           <div className="bg-white shadow-xl rounded-xl p-6">
+             <h2 className="text-xl font-semibold mb-4 text-gray-700">Sipariş Şehir Dağılımı</h2>
+             <ResponsiveContainer width="100%" height={300}>
+               <BarChart data={cityData}>
+-                <XAxis dataKey="name" />
+-                <YAxis />
++                <XAxis
++                  dataKey="name"
++                  interval={0}
++                  angle={-45}
++                  textAnchor="end"
++                  label={{ value: "Şehir", position: "insideBottom", offset: -5 }}
++                />
++                <YAxis
++                  label={{ value: "Sipariş", angle: -90, position: "insideLeft" }}
++                />
+                 <Tooltip />
+                 <Bar dataKey="value" fill="#8884d8" radius={[5, 5, 0, 0]} />
+               </BarChart>
+             </ResponsiveContainer>
+           </div>
+ 
+           {/* Kategori Dağılımı */}
+           <div className="bg-white shadow-xl rounded-xl p-6">
+             <h2 className="text-xl font-semibold mb-4 text-gray-700">Ürün Kategori Dağılımı</h2>
+             <ResponsiveContainer width="100%" height={300}>
+               <PieChart>
+                 <Pie
+                   data={categoryData}
+                   dataKey="value"
+                   nameKey="name"
+                   cx="50%"
+                   cy="50%"
+                   outerRadius={100}
+-                  label
++                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
+                 >
+                   {categoryData.map((_, index) => (
+                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                   ))}
+                 </Pie>
+                 <Tooltip />
+               </PieChart>
+             </ResponsiveContainer>
+              
+           </div>
+           <div className="md:col-span-2">
+             <StockStatus />
+           </div>
+           {/* İade Oranı */}
+           <ReturnRateChart />
+         </div>
+       )}
+       <div className="mt-10 max-w-xl">
+         <Chatbot />
+       </div>
+     </div>
+   );
+ };
+ 
+ 

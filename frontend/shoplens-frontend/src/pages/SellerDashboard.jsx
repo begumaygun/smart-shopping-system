@@ -149,8 +149,16 @@ const SellerDashboard = () => {
             <h2 className="text-xl font-semibold mb-4 text-gray-700">Sipariş Şehir Dağılımı</h2>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={cityData}>
-                <XAxis dataKey="name" />
-                <YAxis />
+                <XAxis
+                  dataKey="name"
+                  interval={0}
+                  angle={-45}
+                  textAnchor="end"
+                  label={{ value: "Şehir", position: "insideBottom", offset: -5 }}
+                />
+                <YAxis
+                  label={{ value: "Sipariş", angle: -90, position: "insideLeft" }}
+                />
                 <Tooltip />
                 <Bar dataKey="value" fill="#8884d8" radius={[5, 5, 0, 0]} />
               </BarChart>
@@ -169,7 +177,7 @@ const SellerDashboard = () => {
                   cx="50%"
                   cy="50%"
                   outerRadius={100}
-                  label
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
                 >
                   {categoryData.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />

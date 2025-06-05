@@ -30,14 +30,17 @@ const StockStatus = () => {
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={stockData.slice(0, 20)} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
             <XAxis
-  dataKey="product_category"
-  interval={0}
-  angle={-45}
-  textAnchor="end"
-  tick={{ fontSize: 11 }}
-  height={70}
-/>
-            <YAxis />
+              dataKey="product_category"
+              interval={0}
+              angle={-45}
+              textAnchor="end"
+              tick={{ fontSize: 11 }}
+              height={70}
+              label={{ value: "Kategori", position: "insideBottom", offset: -5 }}
+            />
+            <YAxis
+              label={{ value: "Stok", angle: -90, position: "insideLeft" }}
+            />
             <Tooltip />
             <Bar dataKey="product_stock" fill="#8884d8" />
           </BarChart>
