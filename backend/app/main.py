@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from ai_model import predict_persona
 from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
+from faq_matcher import faq_matcher
 from collections import Counter
 from datetime import datetime
 
@@ -103,15 +104,9 @@ def get_top_categories():
 
 @app.post("/chat")
 def chat(req: ChatRequest):
-    message = req.message.lower()
-    if "top categories" in message:
-        top_counts = df["product_category"].value_counts().head(3)
-        summary = ", ".join([f"{k} ({v})" for k, v in top_counts.to_dict().items()])
-        return {"reply": f"Top categories: {summary}"}
-    if "review score" in message:
-        avg = round(df["review_score"].mean(), 2)
-        return {"reply": f"Average review score is {avg}."}
-    return {"reply": "Sorry, I can answer about top categories or review score."}
+    message = req.message
+    answer = faq_matcher.get_answer(message)
+    return {"reply": answer}
 
 
 

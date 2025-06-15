@@ -19,4 +19,16 @@ npm run dev
 
 ## Chatbot
 
-Both the seller and customer dashboards now include a simple chatbot. Type a question such as `top categories` or `review score` to see data driven responses.
+Both the seller and customer dashboards now include a simple chatbot powered by a small FAQ dataset located at `backend/app/data/faq.csv`. Incoming questions are matched to the closest entry using a TF‑IDF KNN classifier.
+
+### Adding questions
+
+Edit `faq.csv` and append rows with a `question` and an `answer`. Example prompts:
+
+```
+question,answer
+"top categories","Top categories are electronics, books, and clothing."
+"average review score","Average review score is 4.2."
+```
+
+After updating the CSV, restart the backend to load the new data.
