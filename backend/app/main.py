@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from ai_model import predict_persona
 from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
-from faq_matcher import faq_matcher
+from .faq_matcher import faq_matcher
 from collections import Counter
 from datetime import datetime
 

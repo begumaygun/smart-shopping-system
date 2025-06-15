@@ -19,7 +19,7 @@ npm run dev
 
 ## Chatbot
 
-Both the seller and customer dashboards now include a simple chatbot powered by a small FAQ dataset located at `backend/app/data/faq.csv`. Incoming questions are matched to the closest entry using a TF‑IDF KNN classifier.
+Both the seller and customer dashboards now include a simple chatbot powered by a small FAQ dataset located at `backend/app/data/faq.csv`. Incoming questions are matched to the closest entry using a lightweight keyword similarity search that only relies on Python's standard library.
 
 ### Adding questions
 
