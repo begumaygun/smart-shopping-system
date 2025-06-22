@@ -5,6 +5,8 @@ import Sidebar from '../components/Sidebar';
 import PromoBanner from '../components/PromoBanner';
 import Topbar from '../components/Topbar';
 import TopCategoriesChart from "../components/TopCategoriesChart";
+import ChatbotWrapper from '../components/ChatbotWrapper';
+
 
 const HomePage = () => {
   const [email, setEmail] = useState("");
@@ -30,6 +32,7 @@ const HomePage = () => {
         <div className="flex-1 p-6 overflow-auto">
           <PromoBanner />
           <TopCategoriesChart />
+
           
           {/* Kullanıcıya özel mesaj */}
           <p className="text-sm mt-6 text-gray-100">
@@ -37,6 +40,7 @@ const HomePage = () => {
           </p>
         </div>
       </div>
+      <ChatbotWrapper />
     </div>
   );
 };

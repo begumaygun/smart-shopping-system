@@ -8,7 +8,8 @@ import StatCard from "../components/StatCard";
 import ReturnRateChart from "../components/ReturnRateChart";
 import { Repeat } from 'lucide-react';
 import StockStatus from "../components/StockStatus";
-import Chatbot from "../components/Chatbot";
+import ChatbotWrapper from '../components/ChatbotWrapper';
+
 
 
 
@@ -134,7 +135,8 @@ const SellerDashboard = () => {
       <StatCard title="Tekrar Alışveriş Oranı" value={`${(repeatRatio * 100).toFixed(1)}%`} icon={<Repeat className="text-orange-500" />}
 />
 
-      
+      <ChatbotWrapper />
+
 
       </div>
 
@@ -195,9 +197,7 @@ const SellerDashboard = () => {
           <ReturnRateChart />
         </div>
       )}
-      <div className="mt-10 max-w-xl">
-        <Chatbot />
-      </div>
+     
     </div>
   );
 };
