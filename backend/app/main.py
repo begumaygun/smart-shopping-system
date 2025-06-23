@@ -361,9 +361,14 @@ async def personalized_chat(request: Request):
         persona_row = df_persona[df_persona["customer_unique_id"] == customer_id]
 
         if not persona_row.empty:
-            review_style = persona_row["persona_review_score"].values[0]
-            order_style = persona_row["persona_order_value"].values[0]
-            personalized_prompt += f"\n\nKullanıcının alışveriş tarzı: {order_style}, yorum tarzı: {review_style}."
+            persona_description = "\nBu kullanıcıya ait analiz bilgileri:\n"
+            for col in persona_row.columns:
+                if col != "customer_unique_id":  # ID kısmını dahil etmiyoruz
+                    value = persona_row[col].values[0]
+                    persona_description += f"- {col.replace('_', ' ').capitalize()}: {value}\n"
+
+            personalized_prompt += f"\n{persona_description}"
+
 
     elif role == "seller":
         seller_id = user_row["seller_id"].values[0]

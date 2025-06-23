@@ -6,18 +6,25 @@ const Chatbot = () => {
   const [input, setInput] = useState('');
 
   const sendMessage = async () => {
-    if (!input.trim()) return;
-    const userMsg = { from: 'user', text: input };
-    setMessages(msgs => [...msgs, userMsg]);
-    try {
-      const res = await axios.post('http://localhost:8000/chat', { message: input });
-      const botMsg = { from: 'bot', text: res.data.reply };
-      setMessages(msgs => [...msgs, botMsg]);
-    } catch (err) {
-      setMessages(msgs => [...msgs, { from: 'bot', text: 'Server error.' }]);
-    }
-    setInput('');
-  };
+  if (!input.trim()) return;
+  const userMsg = { from: 'user', text: input };
+  setMessages(msgs => [...msgs, userMsg]);
+
+  const email = localStorage.getItem("userEmail"); // <- email buradan alınıyor
+
+  try {
+    const res = await axios.post('http://localhost:8000/chat', {
+      email: email,
+      message: input
+    });
+    const botMsg = { from: 'bot', text: res.data.reply };
+    setMessages(msgs => [...msgs, botMsg]);
+  } catch (err) {
+    setMessages(msgs => [...msgs, { from: 'bot', text: 'Server error.' }]);
+  }
+
+  setInput('');
+};
 
   return (
     <div className="bg-white shadow-md rounded p-4">
