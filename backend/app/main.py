@@ -10,9 +10,14 @@ from fastapi import Request
 app = FastAPI()
 import os
 from dotenv import load_dotenv
+from openai import OpenAI
 
 load_dotenv()
-HUGGINGFACE_API_KEY = os.getenv("HF_API_KEY")
+
+client = OpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    api_key=os.getenv("HF_API_KEY")
+)
 
 # CORS
 app.add_middleware(
@@ -334,26 +339,21 @@ async def chat(request: Request):
     data = await request.json()
     user_input = data["message"]
 
-    headers = {
-        "Authorization": f"Bearer {HUGGINGFACE_API_KEY}"
-    }
-
-    payload = {
-        "inputs": f"<|system|>You are a helpful assistant.<|user|>{user_input}<|assistant|>"
-    }
-
-    response = requests.post(
-        "https://api-inference.huggingface.co/models/bigscience/bloomz-560m",
-        headers=headers,
-        json=payload
-    )
-
-    result = response.json()
-    print("Hugging Face Cevabı:", result)
-
     try:
-        reply = result[0]["generated_text"]
-    except:
-        reply = str(result)
+        completion = client.chat.completions.create(
+            model="deepseek/deepseek-r1-0528:free",
+            messages=[
+                {"role": "user", "content": user_input}
+            ],
+            extra_headers={
+                "HTTP-Referer": "http://localhost:5173",  # React tarafında çalıştığın URL
+                "X-Title": "ShopLensAI"
+            },
+            extra_body={}
+        )
+        reply = completion.choices[0].message.content
+    except Exception as e:
+        print("Hata:", e)
+        reply = "Cevap alınamadı."
 
     return {"reply": reply}
