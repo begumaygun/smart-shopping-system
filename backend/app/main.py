@@ -334,26 +334,65 @@ def get_customer_category_distribution(email: str):
     counts = customer_orders["product_category"].value_counts().to_dict()
     return counts
 
-@app.post("/chat")
-async def chat(request: Request):
-    data = await request.json()
-    user_input = data["message"]
+df_orders = pd.read_csv("data/shoplens_temiz_veri_cleaned.csv", sep=";",low_memory=False)
+df_users = pd.read_csv("data/All_Data_MailPassword_withRoles.csv", sep=";",low_memory=False)
+df_persona = pd.read_csv("data/shoplens_with_persona_codes.csv", sep=";",low_memory=False)
 
+@app.post("/chat")
+async def personalized_chat(request: Request):
+    data = await request.json()
+    email = data.get("email")
+    user_input = data.get("message")
+
+    if not email or not user_input:
+        raise HTTPException(status_code=400, detail="Email ve mesaj alanları zorunludur.")
+
+    user_row = df_users[df_users["email"] == email]
+    if user_row.empty:
+        raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı.")
+
+    role = user_row["role"].values[0]
+
+    # Mesajı kişiselleştirmek için prompt üret
+    personalized_prompt = f"<|system|>Sen bir e-ticaret asistanısın.<|user|>{user_input}<|assistant|>"
+
+    if role == "customer":
+        customer_id = user_row["customer_unique_id"].values[0]
+        persona_row = df_persona[df_persona["customer_unique_id"] == customer_id]
+
+        if not persona_row.empty:
+            review_style = persona_row["persona_review_score"].values[0]
+            order_style = persona_row["persona_order_value"].values[0]
+            personalized_prompt += f"\n\nKullanıcının alışveriş tarzı: {order_style}, yorum tarzı: {review_style}."
+
+    elif role == "seller":
+        seller_id = user_row["seller_id"].values[0]
+        seller_df = df_orders[df_orders["seller_id"] == seller_id]
+
+        if not seller_df.empty:
+            avg_delivery = round(seller_df["delivery_days"].mean(), 1)
+            avg_review = round(seller_df["review_score"].mean(), 2)
+            stock_info = seller_df.groupby("product_category")["product_stock"].mean().to_dict()
+            personalized_prompt += f"\n\nSatıcı ortalama teslimat süresi: {avg_delivery} gün, yorum ortalaması: {avg_review}."
+            personalized_prompt += f"\nStok bilgileri: {stock_info}"
+
+    else:
+        personalized_prompt += "\n\nBu kullanıcı rolüne özel bilgi bulunamadı."
+
+    # Modelden yanıt al
     try:
         completion = client.chat.completions.create(
             model="deepseek/deepseek-r1-0528:free",
-            messages=[
-                {"role": "user", "content": user_input}
-            ],
+            messages=[{"role": "user", "content": personalized_prompt}],
             extra_headers={
-                "HTTP-Referer": "http://localhost:5173",  # React tarafında çalıştığın URL
-                "X-Title": "ShopLensAI"
+                "HTTP-Referer": "http://localhost:5173",
+                "X-Title": "ShopLens AI"
             },
             extra_body={}
         )
         reply = completion.choices[0].message.content
     except Exception as e:
-        print("Hata:", e)
-        reply = "Cevap alınamadı."
+        print("[CHATBOT HATASI]:", e)
+        reply = "Cevap üretilemedi, lütfen tekrar deneyin."
 
     return {"reply": reply}
