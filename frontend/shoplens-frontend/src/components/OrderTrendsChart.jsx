@@ -51,7 +51,7 @@ const OrderTrendsChart = ({ email }) => {
               textAnchor="end"
               tick={{ fontSize: 11 }}
               height={70}
-              label={{ value: "Ay", position: "insideBottom", offset: -5 }}
+              label={{ value: "Ay", position: "insideBottom", offset: 5 }}
             />
             <YAxis
               allowDecimals={false}

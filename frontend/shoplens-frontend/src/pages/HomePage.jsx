@@ -22,7 +22,7 @@ const HomePage = () => {
   }, []);
 
   return (
-    <div className="bg-[#e9944e]" style={{ height: "100vh" }}>
+    <div className="bg-[#D9D9D9]" style={{ height: "100vh" }}>
       <Topbar />
       <div className="flex h-full">
         {/* Sidebar solda */}

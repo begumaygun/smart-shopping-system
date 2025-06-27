@@ -401,3 +401,42 @@ async def personalized_chat(request: Request):
         reply = "Cevap üretilemedi, lütfen tekrar deneyin."
 
     return {"reply": reply}
+
+
+
+@app.get("/seller-revenue/{email}")
+def get_seller_revenue(email: str):
+    user_row = users_df[users_df["email"] == email]
+    if user_row.empty:
+        raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı.")
+
+    seller_id = user_row["seller_id"].values[0]
+    seller_orders = df[df["seller_id"] == seller_id]
+
+    if seller_orders.empty:
+        return {"monthly_revenue": []}
+
+    # Tarihi datetime formatına çevir
+    seller_orders["order_purchase_timestamp"] = pd.to_datetime(seller_orders["order_purchase_timestamp"], errors='coerce')
+
+    # Sadece geçerli tarihleri al
+    seller_orders = seller_orders.dropna(subset=["order_purchase_timestamp"])
+
+    # Aylık gruplama ve gelir hesaplama
+    seller_orders["year_month"] = seller_orders["order_purchase_timestamp"].dt.to_period("M").astype(str)
+
+    if "price" in seller_orders.columns:
+        seller_orders["total_price"] = seller_orders["price"]  # Eğer direkt varsa
+    elif "payment_value" in seller_orders.columns:
+        seller_orders["total_price"] = seller_orders["payment_value"]  # Alternatif
+    else:
+        raise HTTPException(status_code=500, detail="price veya payment_value sütunu eksik.")
+
+    grouped = seller_orders.groupby("year_month")["total_price"].sum().reset_index()
+
+    result = [
+        {"date": row["year_month"], "total_revenue": round(row["total_price"], 2)}
+        for _, row in grouped.iterrows()
+    ]
+
+    return {"monthly_revenue": result}

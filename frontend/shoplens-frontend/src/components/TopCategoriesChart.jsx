@@ -25,25 +25,29 @@ const TopCategoriesChart = () => {
   }, []);
 
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-md w-full h-96">
-      <h2 className="text-xl font-bold mb-4">Popular Categories</h2>
-      <ResponsiveContainer width="100%" height="80%">
-        <BarChart data={data}>
-          <XAxis
-            dataKey="name"
-            interval={0}
-            angle={-45}
-            textAnchor="end"
-            label={{ value: "Kategori", position: "insideBottom", offset: -5 }}
-          />
-          <YAxis
-            label={{ value: "Adet", angle: -90, position: "insideLeft" }}
-          />
-          <Tooltip />
-          <Bar dataKey="count" fill="#f97316" />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
+    <div className="bg-white p-6 rounded-2xl shadow-md h-60 w-[600px] ml-4 mb-20">
+  <h2 className="text-xl font-bold mb-4">Popular Categories</h2>
+  <ResponsiveContainer width="100%" height="100%">
+    <BarChart data={data}
+    margin={{ top: 5, right: 5, left: 5, bottom: 30 }}>
+      <XAxis
+        dataKey="name"
+        interval={0}
+        angle={-20}
+        textAnchor="end"
+        dy={0}
+        label={{ value: "Kategori", position: "insideBottom", offset: -20 }} // 🔧 offset artırıldı
+      />
+      <YAxis
+        label={{ value: "Adet", angle: -90, position: "insideLeft" }}
+      />
+      <Tooltip />
+      <Bar dataKey="count" fill="#001f3f" />
+    </BarChart>
+  </ResponsiveContainer>
+</div>
+
+
   );
 };
 

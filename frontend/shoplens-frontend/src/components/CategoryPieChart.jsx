@@ -44,7 +44,7 @@ const CategoryPieChart = ({ email }) => {
               data={data}
               dataKey="value"
               nameKey="name"
-              cx="50%"
+              cx="55%"
               cy="50%"
               outerRadius={120}
               label={({ name, percent }) =>
