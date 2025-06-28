@@ -25,17 +25,18 @@ const TopCategoriesChart = () => {
   }, []);
 
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-md h-60 w-[600px] ml-4 mb-20">
+    <div className="bg-white p-6  rounded-2xl shadow-md h-60 w-[600px]  ml-4 mb-20">
   <h2 className="text-xl font-bold mb-4">Popular Categories</h2>
-  <ResponsiveContainer width="100%" height="100%">
+  <ResponsiveContainer width="100%" height="90%">
     <BarChart data={data}
     margin={{ top: 5, right: 5, left: 5, bottom: 30 }}>
       <XAxis
         dataKey="name"
         interval={0}
-        angle={-20}
-        textAnchor="end"
-        dy={0}
+        angle={0}
+        textAnchor="middle"
+        dy={10}
+        tick={{ fontSize: 13 }}
         label={{ value: "Kategori", position: "insideBottom", offset: -20 }} // 🔧 offset artırıldı
       />
       <YAxis
