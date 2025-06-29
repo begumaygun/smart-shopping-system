@@ -9,6 +9,6 @@ persona_labels = {
 
 def predict_persona(input_data: dict):
     df = pd.DataFrame([input_data])
-    pipeline = joblib.load("app/kmeans_model.pkl")  # Model dosyası sabit
+    pipeline = joblib.load("app/kmeans_model.pkl")  
     prediction = pipeline.predict(df)[0]
     return persona_labels.get(prediction, f"Küme {prediction}")
