@@ -96,7 +96,7 @@ const SellerDashboard = () => {
   }, [orders]);
 
   return (
-    <div className="p-8 bg-orange-50 min-h-screen">
+    <div className="p-8 bg-gray-300 min-h-screen">
       <h1 className="text-3xl font-bold text-purple-700">Satıcı Paneli</h1>
       <p className="text-gray-600 mt-2">Giriş yapan: <strong>{email}</strong></p>
 

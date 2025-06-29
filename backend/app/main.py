@@ -243,35 +243,65 @@ async def personalized_chat(request: Request):
     data = await request.json()
     email = data.get("email")
     user_input = data.get("message")
+
     if not email or not user_input:
         raise HTTPException(status_code=400, detail="Email ve mesaj alanları zorunludur.")
+
     user_row = df_users[df_users["email"] == email]
     if user_row.empty:
         raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı.")
+
     role = user_row["role"].values[0]
-    personalized_prompt = f"<|system|>Sen bir e-ticaret asistanısın.<|user|>{user_input}<|assistant|>"
+
+    # 📌 Sistem promptu: Genel tavır, görev ve stil
+    system_prompt = (
+        "Sen ShopLens adlı e-ticaret platformunda çalışan bir yapay zeka asistanısın.\n"
+        "Kullanıcılara alışveriş tercihleri, sipariş geçmişi, ya da satış performansı hakkında yardımcı ol.\n"
+        "Yanıtların kısa, samimi ve açıklayıcı olmalı.\n"
+        "Kullanıcı bir şeyi belirsiz sorarsa kibarca tekrar açıklamasını iste.\n"
+    )
+
+    # 🧠 Kullanıcının mesajı + sistem promptu
+    personalized_prompt = f"<|system|>{system_prompt}<|user|>{user_input}<|assistant|>"
+
+    # 👥 ROL: CUSTOMER
     if role == "customer":
         customer_id = user_row["customer_unique_id"].values[0]
         persona_row = df_persona[df_persona["customer_unique_id"] == customer_id]
+
         if not persona_row.empty:
-            persona_description = "\nBu kullanıcıya ait analiz bilgileri:\n"
+            persona_description = "\nBu müşteriye ait alışveriş analizi:\n"
             for col in persona_row.columns:
-                if col != "customer_unique_id":  # ID kısmını dahil etmiyoruz
+                if col != "customer_unique_id":
                     value = persona_row[col].values[0]
-                    persona_description += f"- {col.replace('_', ' ').capitalize()}: {value}\n"
+                    label = col.replace("_", " ").capitalize()
+                    persona_description += f"• {label}: {value}\n"
 
             personalized_prompt += f"\n{persona_description}"
+
+    # 🧾 ROL: SELLER
     elif role == "seller":
         seller_id = user_row["seller_id"].values[0]
         seller_df = df_orders[df_orders["seller_id"] == seller_id]
+
         if not seller_df.empty:
             avg_delivery = round(seller_df["delivery_days"].mean(), 1)
             avg_review = round(seller_df["review_score"].mean(), 2)
             stock_info = seller_df.groupby("product_category")["product_stock"].mean().to_dict()
-            personalized_prompt += f"\n\nSatıcı ortalama teslimat süresi: {avg_delivery} gün, yorum ortalaması: {avg_review}."
-            personalized_prompt += f"\nStok bilgileri: {stock_info}"
+
+            personalized_prompt += (
+                f"\nSatıcıya ait bilgiler:\n"
+                f"- Ortalama teslim süresi: {avg_delivery} gün\n"
+                f"- Ortalama müşteri puanı: {avg_review}/5\n"
+            )
+
+            stock_lines = "\n".join([f"• {cat}: {int(stock)} adet" for cat, stock in stock_info.items()])
+            personalized_prompt += f"\nStok durumu:\n{stock_lines}"
+
     else:
-        personalized_prompt += "\n\nBu kullanıcı rolüne özel bilgi bulunamadı."
+        personalized_prompt += "\nBu kullanıcı rolü için ekstra bilgi bulunamadı."
+
+    # 🤖 MODEL API Çağrısı
     try:
         completion = client.chat.completions.create(
             model="deepseek/deepseek-r1-0528:free",
@@ -283,10 +313,13 @@ async def personalized_chat(request: Request):
             extra_body={}
         )
         reply = completion.choices[0].message.content
+        
     except Exception as e:
         print("[CHATBOT HATASI]:", e)
         reply = "Cevap üretilemedi, lütfen tekrar deneyin."
+
     return {"reply": reply}
+
 @app.get("/seller-revenue/{email}")
 def get_seller_revenue(email: str):
     user_row = users_df[users_df["email"] == email]

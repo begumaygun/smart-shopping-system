@@ -4,7 +4,7 @@ import Sidebar from "../components/Sidebar";
 import CustomerPersonaCard from "../components/CustomerPersonaCard";
 import OrderTrendsChart from "../components/OrderTrendsChart";
 import CategoryPieChart from "../components/CategoryPieChart";
-import Chatbot from "../components/Chatbot";
+import ChatbotWrapper from "../components/ChatbotWrapper";
 
 
 
@@ -19,7 +19,7 @@ const CustomerDashboard = () => {
   }, []);
 
   return (
-    <div className="bg-[#e9944e] min-h-screen">
+    <div className="bg-[#d9d9d9] min-h-screen">
       <Topbar />
       <div className="flex">
         <Sidebar />
@@ -30,7 +30,7 @@ const CustomerDashboard = () => {
             <OrderTrendsChart email={email} />
             <CategoryPieChart email={email} />
           </div>
-          <Chatbot />
+          <ChatbotWrapper />
         </div>
       </div>
     </div>
