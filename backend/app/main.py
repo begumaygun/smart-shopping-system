@@ -23,8 +23,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-df = pd.read_csv("../app/data/shoplens_temiz_veri_cleaned.csv", sep=";")
-users_df = pd.read_csv("../app/data/All_Data_MailPassword_withRoles.csv", sep=";")
+df = pd.read_csv("../app/data/shoplens_temiz_veri_cleaned.csv", sep=";",encoding="utf-8")
+users_df = pd.read_csv("../app/data/All_Data_MailPassword_withRoles.csv", sep=";",encoding="utf-8")
 user_dict = dict(zip(users_df["email"], users_df["password"]))
 class LoginRequest(BaseModel):
     email: str
@@ -131,12 +131,12 @@ def get_avg_delivery(seller_id: str):
     return {"seller_id": seller_id, "avg_delivery_days": avg_days}
 @app.get("/seller-review-score/{email}")
 def get_avg_review_score(email: str):
-    users_df = pd.read_csv("../app/data/All_Data_MailPassword_withRoles.csv", sep=";")
+    users_df = pd.read_csv("../app/data/All_Data_MailPassword_withRoles.csv", sep=";", encoding="utf-8")
     user_row = users_df[users_df["email"] == email]
     if user_row.empty:
         raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı")
     seller_id = user_row.iloc[0]["seller_id"]
-    df = pd.read_csv("../app/data/shoplens_temiz_veri_cleaned.csv", sep=";")
+    df = pd.read_csv("../app/data/shoplens_temiz_veri_cleaned.csv", sep=";",encoding="utf-8")
     seller_data = df[df["seller_id"] == seller_id]
     if seller_data.empty:
         raise HTTPException(status_code=404, detail="Satıcıya ait sipariş verisi yok")
@@ -195,7 +195,7 @@ def get_user_persona(email: str):
     if user_row.empty:
         raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı")
     customer_id = user_row["customer_unique_id"].values[0]
-    persona_df = pd.read_csv("../app/data/shoplens_with_persona_codes.csv", sep=";")
+    persona_df = pd.read_csv("../app/data/shoplens_with_persona_codes.csv", sep=";", encoding="utf-8")
     persona_row = persona_df[persona_df["customer_unique_id"] == customer_id]
     if persona_row.empty:
         raise HTTPException(status_code=404, detail="Persona bulunamadı")
@@ -235,9 +235,9 @@ def get_customer_category_distribution(email: str):
         return {}
     counts = customer_orders["product_category"].value_counts().to_dict()
     return counts
-df_orders = pd.read_csv("data/shoplens_temiz_veri_cleaned.csv", sep=";",low_memory=False)
-df_users = pd.read_csv("data/All_Data_MailPassword_withRoles.csv", sep=";",low_memory=False)
-df_persona = pd.read_csv("data/shoplens_with_persona_codes.csv", sep=";",low_memory=False)
+df_orders = pd.read_csv("data/shoplens_temiz_veri_cleaned.csv", sep=";",low_memory=False, encoding="utf-8")
+df_users = pd.read_csv("data/All_Data_MailPassword_withRoles.csv", sep=";",low_memory=False, encoding="utf-8")
+df_persona = pd.read_csv("data/shoplens_with_persona_codes.csv", sep=";",low_memory=False, encoding="utf-8")
 @app.post("/chat")
 async def personalized_chat(request: Request):
     data = await request.json()
